@@ -1,0 +1,20 @@
+[package]
+name = "shorts_generator"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+anyhow = "*"
+clap = { version = "*", features = ["derive"] }
+ffmpeg-next = "*"
+serde = { version = "*", features = ["derive"] }
+serde_json = "*"
+log = "0.4"
+env_logger = "0.10"
+chrono = { version = "0.4", features = ["serde"] } # Added chrono
+
+[[bin]]
+name = "shorts_wizard"
+path = "src/main.rs"
