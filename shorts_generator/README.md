@@ -12,7 +12,9 @@ It allows users to:
 
 ## Prerequisites
 
-Before building and running this project, ensure you have the following installed:
+**Note**: If you are using the Nix development environment (see "Development Environment with Nix" section below), most of the software prerequisites like Rust, FFmpeg, and Clang will be provided for you. You will primarily need to ensure you have the Whisper V3 model file and a font file.
+
+If not using Nix, ensure you have the following installed:
 
 1.  **Rust**: Latest stable version, installed via `rustup` is recommended.
     ```bash
@@ -36,6 +38,58 @@ Before building and running this project, ensure you have the following installe
 4.  **Whisper V3 Model File**: Download a Whisper V3 model file (e.g., `large-v3.bin`, `medium.bin`, `base.en.bin`). The path to this model will be needed for subtitle generation.
 
 5.  **Font File**: A TrueType (`.ttf`) or OpenType (`.otf`) font file is required if you plan to burn subtitles.
+
+## Development Environment with Nix
+
+This project includes a `shell.nix` file to provide a reproducible development environment using [Nix](https://nixos.org/).
+
+To enter this environment:
+1.  Ensure you have Nix installed. See the [official Nix installation guide](https://nixos.org/download.html).
+2.  Navigate to the project root directory (where `shell.nix` is located).
+3.  Run the following command:
+    ```bash
+    nix-shell
+    ```
+    This will download all specified dependencies and drop you into a shell where they are available.
+
+### Provided Dependencies
+
+The Nix shell environment provides the following key tools and libraries:
+- `ffmpeg`: For video and audio processing.
+- `rustc` and `cargo`: For building and managing the Rust project.
+- `pkg-config`: For C library dependency management.
+- `clang_17`: C compiler, used by `bindgen` for generating Rust bindings to C libraries.
+- `openssl.dev`: Development files for OpenSSL.
+- `libclang.lib`: Clang library files, also for `bindgen`.
+
+### Whisper Integration in Nix
+
+The `shell.nix` currently includes a **placeholder** for the `whisper` executable. This means that out-of-the-box, the `whisper` command within the `nix-shell` will only show a warning.
+
+To integrate your actual Whisper V3 CLI tool (e.g., a `whisper.cpp` build):
+1.  You need to have Whisper V3 packaged or available in your Nix setup. This might involve:
+    *   Finding an existing package in Nixpkgs (e.g., searching `https://search.nixos.org/packages`). Common names could be `whisper-cpp`, `whispercpp`, or variants with GPU support like `whisper-cpp-cuda`.
+    *   Creating your own Nix derivation for `whisper.cpp` if a suitable package is not available.
+2.  Modify the `shell.nix` file to include your Whisper package. For example, if your package is available as `pkgs.whisper-cpp`:
+
+    ```nix
+    # In shell.nix, find the buildInputs array and replace the placeholder:
+    buildInputs = [
+      pkgs.ffmpeg
+      pkgs.rustc
+      pkgs.cargo
+      # ... other packages ...
+      
+      # Replace the (pkgs.runCommand "whisper-placeholder" ... ) block with:
+      pkgs.whisper-cpp # Or your custom package attribute, e.g., myWhisperPackage
+      
+      # ...
+    ];
+    ```
+
+3.  After updating `shell.nix`, re-enter the environment with `nix-shell`. The `whisper` command should now point to your actual Whisper V3 executable.
+
+Once the Nix environment is set up (and Whisper is correctly configured if you intend to use subtitle features), all build and run commands mentioned in this README (e.g., `cargo build`, `./target/debug/shorts_wizard`) should work as expected from within the `nix-shell`.
 
 ## Building the Project
 
